@@ -1,0 +1,1 @@
+require_relative "no_side_effects_in_callbacks"

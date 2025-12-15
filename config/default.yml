@@ -1,0 +1,9 @@
+CallbackChecker:
+  Exclude:
+    - 'db/**/*'
+    - 'config/**/*'
+
+CallbackChecker/NoSideEffectsInCallbacks:
+  Description: 'Disallows logic with side effects (like external APIs or mailers) in before_* and after_save callbacks.'
+  Enabled: true
+  Severity: warning
