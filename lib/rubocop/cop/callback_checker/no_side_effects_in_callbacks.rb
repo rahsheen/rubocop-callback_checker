@@ -30,95 +30,96 @@ module RuboCop
           ActionCable
         ].freeze
 
-        def on_class(class_node)
-          defined_callbacks(class_node).each do |callback_call_node|
-            pp "got callback node #{callback_call_node}"
-            # Get the arguments array from the :send node (children after index 1)
-            arguments = callback_call_node.arguments
-            callback_method = callback_call_node.method_name
-            pp callback_call_node
+        # def on_class(class_node)
+        #   defined_callbacks(class_node).each do |callback_call_node|
+        #     pp "got callback node #{callback_call_node}"
+        #     # Get the arguments array from the :send node (children after index 1)
+        #     arguments = callback_call_node.arguments
+        #     callback_method = callback_call_node.method_name
+        #     pp callback_call_node
+        #
+        #     # Check if there is a first argument and if it's a Symbol Literal (:sym)
+        #     first_arg_node = arguments.first
+        #
+        #     if first_arg_node.sym_type?
+        #       pp "Got sym"
+        #       # For a :sym node, the actual value (the symbol) is its value
+        #       callback_method_name = first_arg_node.value
+        #
+        #       pp "on_class callback: #{callback_method_name}"
+        #
+        #       # Now you can use the corrected name to find the definition
+        #       method_def_node = method_definition_for(class_node, callback_method_name)
+        #       if method_def_node
+        #         # 3. Get the method body from the definition node
+        #         # A :def node typically has children: [method_name, arguments_node, body_node]
+        #         method_body_node = method_def_node.children[2]
+        #
+        #         # Now you can check the contents of method_body_node
+        #         # check_method_body(method_body_node)
+        #         check_method_contents(method_body_node, callback_method)
+        #       else
+        #         # Handle cases where the callback might be defined in a module,
+        #         # a parent class, or is a lambda/proc, etc.
+        #         pp "Could not find definition for: #{callback_method_name}"
+        #       end
+        #     else
+        #       pp "Node was not sym type"
+        #     end
+        #   end
+        # end
 
-            # Check if there is a first argument and if it's a Symbol Literal (:sym)
-            first_arg_node = arguments.first
+        def on_send(node)
+          # 1. Check if the called method is one of our sensitive callbacks
+          return unless SIDE_EFFECT_SENSITIVE_CALLBACKS.include?(node.method_name)
 
-            if first_arg_node.sym_type?
-              pp "Got sym"
-              # For a :sym node, the actual value (the symbol) is its value
-              callback_method_name = first_arg_node.value
+          # 2. If it's a block-less call, the callback logic must be in the arguments.
 
-              pp "on_class callback: #{callback_method_name}"
+          # Check for Symbol argument (:method_name) or Lambda argument (-> { ... })
+          first_arg_node = node.arguments.first
 
-              # Now you can use the corrected name to find the definition
-              method_def_node = method_definition_for(class_node, callback_method_name)
-              if method_def_node
-                # 3. Get the method body from the definition node
-                # A :def node typically has children: [method_name, arguments_node, body_node]
-                method_body_node = method_def_node.children[2]
+          if first_arg_node&.sym_type?
+            # Handle Case: before_save :method_name
+            callback_method_name = first_arg_node.value
+            check_symbol_callback(node, callback_method_name)
 
-                # Now you can check the contents of method_body_node
-                # check_method_body(method_body_node)
-                check_for_side_effects(method_body_node, callback_method)
-              else
-                # Handle cases where the callback might be defined in a module,
-                # a parent class, or is a lambda/proc, etc.
-                pp "Could not find definition for: #{callback_method_name}"
-              end
-            else
-              pp "Node was not sym type"
-            end
+          elsif first_arg_node&.block_type?
+            # Handle Case: before_save -> { ... }
+            # Body is the third child of the block node
+            method_body_node = first_arg_node.children[2]
+            check_method_contents(method_body_node)
           end
         end
 
-        # def on_send(node)
-        #   # Check if the method is one of our sensitive callbacks
-        #   return unless SIDE_EFFECT_SENSITIVE_CALLBACKS.include?(node.method_name)
-        #
-        #   # We only check block-style callbacks, as method-referenced callbacks
-        #   # (e.g., `before_save :my_method`) require complex class scope analysis.
-        #   return unless node.block_type?
-        #
-        #   # The body of the block contains the callback logic
-        #   callback_logic_node = node.body
-        #
-        #   check_for_side_effects(callback_logic_node, node.method_name)
-        # end
+        def on_block(node)
+          # The method being called is the first child of the :block node
+          send_node = node.children.first
+          callback_method_name = send_node.method_name
+
+          # 1. Check if the method inside the block is one of our sensitive callbacks
+          return unless send_node.send_type? && SIDE_EFFECT_SENSITIVE_CALLBACKS.include?(callback_method_name)
+
+          # 2. The block body is the third child of the :block node
+          method_body_node = node.children[2]
+          check_method_contents(method_body_node, callback_method_name)
+        end
 
         private
 
-        def defined_callbacks(class_node)
-          # 1. Get the class body node (class_node.children[2])
-          class_body = class_node.body
-
-          # Return early if there is no body (empty class)
-          return [] unless class_body
-
-          # 2. Normalize the statements:
-          statements = []
-
-          if class_body.begin_type?
-            pp "begin type"
-            # If it's a :begin node, its children are the statements.
-            statements = class_body.children
-          elsif class_body.block_type?
-            pp "block type #{class_body.children[0].method_name}"
-            # Handle cases where the class definition is followed by a block (rare, but good to guard)
-            # The statements would be the children of the block body node (index 2 of :block node)
-            block_callback_method = class_body.children[0].method_name
-            block_body = class_body.children[2]
-            pp block_callback_method
-          else
-            pp "dafuq type"
-            # If it's not a :begin or :block, it must be a single statement (e.g., a single :send node).
-            statements = [class_body]
+        # Helper for Symbol callbacks
+        def check_symbol_callback(node, callback_method_name)
+          parent = node.ancestors.find do |ancestor|
+            ancestor.class_type? || ancestor.module_type?
           end
-          pp statements
-          # 3. Select the nodes that are callback calls
-          # We use `flat_map` here in case we need to recursively check children for nested callbacks
-          statements.select { |statement_node| callback?(statement_node) }
-        end
 
-        def callback?(node)
-          node.send_type? && SIDE_EFFECT_SENSITIVE_CALLBACKS.include?(node.method_name)
+          method_def_node = method_definition_for(parent, callback_method_name)
+
+          if method_def_node
+            # Children of :def node: [method_name, arguments_node, body_node]
+            method_body_node = method_def_node.children[2]
+            pp "got method #{method_body_node} #{node.method_name}"
+            check_method_contents(method_body_node, node.method_name)
+          end
         end
 
         def method_definition_for(class_node, method_name)
@@ -126,7 +127,6 @@ module RuboCop
           return nil unless class_body
 
           pp "Finding #{method_name}"
-
           # Check the body itself first
           if class_body.def_type? && class_body.method_name == method_name
             pp "Found in body"
@@ -145,10 +145,11 @@ module RuboCop
         end
 
         # Traverses the AST of the callback body to look for side effects
-        def check_for_side_effects(node, callback_method)
+        def check_method_contents(node, callback_method)
           # Recursively search the AST below the callback definition for method calls (:send nodes)
           node.each_node(:send) do |send_node|
             # --- Check 1: Explicit Method Name ---
+            pp "checking #{send_node}"
             if SIDE_EFFECT_INDICATORS.include?(send_node.method_name)
               # Check for methods like `deliver_later` or generic side effect methods.
               add_offense_for_side_effect(send_node, callback_method)
