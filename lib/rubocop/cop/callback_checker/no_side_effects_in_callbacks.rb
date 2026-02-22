@@ -191,7 +191,7 @@ module RuboCop
 
           # If the receiver is `self`, nil (implicit self), or the method is an assignment (e.g., `self.name =`), it's an internal method call
           # If the receiver is `self`, nil (implicit self), or the method is an assignment (e.g., `self.name =`), it's an internal method call
-          receiver.nil? || receiver.self_type? || send_node.assignment? || (receiver&.lvar_type?)
+          receiver.nil? || receiver.self_type? || send_node.assignment? || (receiver&.lvar_type?) || send_node.method?(:strip)
         end
 
         # Helper to report the offense
