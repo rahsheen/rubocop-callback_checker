@@ -54,4 +54,28 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       end
     RUBY
   end
+
+  it "registers an offense for any method call in a callback" do
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        before_save :sanitize_name
+
+        def sanitize_name
+          some_method_call
+          ^^^^^^^^^^^^^^^^ #{format(described_class::MSG, callback: :before_save)}
+        end
+      end
+    RUBY
+  end
+
+  it "registers an offense for any method call in a block callback" do
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        before_save do
+          some_method_call
+          ^^^^^^^^^^^^^^^^ #{format(described_class::MSG, callback: :before_save)}
+        end
+      end
+    RUBY
+  end
 end
