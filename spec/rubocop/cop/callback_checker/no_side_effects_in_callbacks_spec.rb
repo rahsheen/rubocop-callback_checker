@@ -63,6 +63,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
 
         def sanitize_name
           self.name = name.strip
+          self.email = email.downcase
         end
       end
     RUBY
