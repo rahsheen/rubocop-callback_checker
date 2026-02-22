@@ -165,7 +165,7 @@ module RuboCop
 
             # --- Check 3: Any method call in the callback ---
             # Exclude internal method calls (e.g., self.method_name or method_name)
-            unless internal_method_call?(send_node)
+            unless internal_method_call?(send_node) || send_node.assignment?
               add_offense_for_side_effect(send_node, callback_method)
             end
           end
@@ -189,8 +189,8 @@ module RuboCop
         def internal_method_call?(send_node)
           receiver = send_node.receiver
 
-          # If the receiver is `self` or nil (implicit self), it's an internal method call
-          receiver.nil? || receiver.self_type?
+          # If the receiver is `self`, nil (implicit self), or the method is an assignment (e.g., `self.name =`), it's an internal method call
+          receiver.nil? || receiver.self_type? || send_node.assignment?
         end
 
         # Helper to report the offense
