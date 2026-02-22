@@ -160,7 +160,11 @@ module RuboCop
             if check_for_external_constants(send_node)
               # Check for patterns like `Faraday.get` or `Sidekiq::Client.push`.
               add_offense_for_side_effect(send_node, callback_method)
+              next
             end
+
+            # --- Check 3: Any method call in the callback ---
+            add_offense_for_side_effect(send_node, callback_method)
           end
         end
 
