@@ -26,7 +26,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
           before_save do
             # Side effect indicator: perform_later
             UserMailer.deliver_later
-            ^^^^^^^^^^^^^^^^^^^^^^^^ #{format(described_class::MSG, callback: :before_save)}
+            ^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_save. Use `after_commit` instead.
           end
 
           after_save do
@@ -35,6 +35,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
 
           def do_stuff
             UserMailer.deliver_later
+            ^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_create. Use `after_commit` instead.
           end
         end
       RUBY
