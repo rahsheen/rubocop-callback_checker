@@ -1,19 +1,21 @@
+# frozen_string_literal: true
+
 # In spec/rubocop/cop/callback_checker/no_side_effects_in_callbacks_spec.rb
 
 require "spec_helper"
 
 RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config do
   # Code that is CORRECT (should not be flagged)
-  # it "does not register an offense when logic is purely internal" do
-  #   expect_no_offenses(<<~RUBY)
-  #     class User < ApplicationRecord
-  #       before_save :sanitize_name
-  #       def sanitize_name
-  #         self.name = name.strip
-  #       end
-  #     end
-  #   RUBY
-  # end
+  it "does not register an offense when logic is purely internal" do
+    expect_no_offenses(<<~RUBY)
+      class User < ApplicationRecord
+        before_save :sanitize_name
+        def sanitize_name
+          self.name = name.strip
+        end
+      end
+    RUBY
+  end
 
   context "when callback is defined as a lambda" do
     it "registers an offense when calling a background job in before_save" do
@@ -39,17 +41,17 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  # it "registers an offense when calling a background job in before_save" do
-  #   expect_offense(<<~RUBY)
-  #     class User < ApplicationRecord
-  #       before_save :send_notification
-  #
-  #       def send_notification
-  #         # Side effect indicator: perform_later
-  #         UserMailer.deliver_later
-  #         ^^^^^^^^^^^^^^^^^^^^^^^^ #{format(described_class::MSG, callback: :before_save)}
-  #       end
-  #     end
-  #   RUBY
-  # end
+  it "registers an offense when calling a background job in before_save" do
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        before_save :send_notification
+
+        def send_notification
+          # Side effect indicator: perform_later
+          UserMailer.deliver_later
+          ^^^^^^^^^^^^^^^^^^^^^^^^ #{format(described_class::MSG, callback: :before_save)}
+        end
+      end
+    RUBY
+  end
 end
