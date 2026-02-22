@@ -163,9 +163,9 @@ module RuboCop
               next
             end
 
-            # --- Check 3: Any method call in the callback ---
-            # Exclude internal method calls (e.g., self.method_name or method_name)
-            unless internal_method_call?(send_node) || send_node.assignment?
+            # --- Check 3: Flag only side effect method calls ---
+            # Exclude internal method calls and only flag side effect indicators
+            if SIDE_EFFECT_INDICATORS.include?(send_node.method_name) && !internal_method_call?(send_node)
               add_offense_for_side_effect(send_node, callback_method)
             end
           end
