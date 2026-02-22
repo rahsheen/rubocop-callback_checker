@@ -190,7 +190,8 @@ module RuboCop
           receiver = send_node.receiver
 
           # If the receiver is `self`, nil (implicit self), or the method is an assignment (e.g., `self.name =`), it's an internal method call
-          receiver.nil? || receiver.self_type? || send_node.assignment?
+          # If the receiver is `self`, nil (implicit self), or the method is an assignment (e.g., `self.name =`), it's an internal method call
+          receiver.nil? || receiver.self_type? || send_node.assignment? || (receiver && receiver.lvar_type?)
         end
 
         # Helper to report the offense

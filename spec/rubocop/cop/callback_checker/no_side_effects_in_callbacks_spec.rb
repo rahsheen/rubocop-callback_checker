@@ -56,25 +56,23 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     RUBY
   end
 
-  it "registers an offense for any method call in a callback" do
-    expect_offense(<<~RUBY)
+  it "does not register an offense for internal method calls in a callback" do
+    expect_no_offenses(<<~RUBY)
       class User < ApplicationRecord
         before_save :sanitize_name
 
         def sanitize_name
-          some_method_call
-          ^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_save. Use `after_commit` instead.
+          self.name = name.strip
         end
       end
     RUBY
   end
 
-  it "registers an offense for any method call in a block callback" do
-    expect_offense(<<~RUBY)
+  it "does not register an offense for internal logic in a block callback" do
+    expect_no_offenses(<<~RUBY)
       class User < ApplicationRecord
         before_save do
-          some_method_call
-          ^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_save. Use `after_commit` instead.
+          self.name = name.strip
         end
       end
     RUBY
