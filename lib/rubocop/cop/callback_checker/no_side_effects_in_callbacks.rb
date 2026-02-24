@@ -22,7 +22,7 @@ module RuboCop
 
         # Targets persistence on Constants, local vars, or association calls
         def_node_matcher :side_effect_persistence?, <<~PATTERN
-          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :destroy :destroy! :create :create! :create_or_find!})
+          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :destroy :destroy! :create :create!})
         PATTERN
 
         def on_send(node)
@@ -35,7 +35,7 @@ module RuboCop
           node.arguments.each do |arg|
             if arg.sym_type?
               check_symbol_callback(node, arg.value)
-            elsif arg.block_type? || arg.lambda? || arg.proc? || arg.send_type?
+            elsif arg.block_type? || arg.lambda? || arg.proc?
               # arg.body works for blocks/lambdas to get the executable logic
               check_method_contents(arg.body, node.method_name)
             end
