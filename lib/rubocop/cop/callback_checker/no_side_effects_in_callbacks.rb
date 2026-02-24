@@ -30,45 +30,6 @@ module RuboCop
           ActionCable
         ].freeze
 
-        # def on_class(class_node)
-        #   defined_callbacks(class_node).each do |callback_call_node|
-        #     pp "got callback node #{callback_call_node}"
-        #     # Get the arguments array from the :send node (children after index 1)
-        #     arguments = callback_call_node.arguments
-        #     callback_method = callback_call_node.method_name
-        #     pp callback_call_node
-        #
-        #     # Check if there is a first argument and if it's a Symbol Literal (:sym)
-        #     first_arg_node = arguments.first
-        #
-        #     if first_arg_node.sym_type?
-        #       pp "Got sym"
-        #       # For a :sym node, the actual value (the symbol) is its value
-        #       callback_method_name = first_arg_node.value
-        #
-        #       pp "on_class callback: #{callback_method_name}"
-        #
-        #       # Now you can use the corrected name to find the definition
-        #       method_def_node = method_definition_for(class_node, callback_method_name)
-        #       if method_def_node
-        #         # 3. Get the method body from the definition node
-        #         # A :def node typically has children: [method_name, arguments_node, body_node]
-        #         method_body_node = method_def_node.children[2]
-        #
-        #         # Now you can check the contents of method_body_node
-        #         # check_method_body(method_body_node)
-        #         check_method_contents(method_body_node, callback_method)
-        #       else
-        #         # Handle cases where the callback might be defined in a module,
-        #         # a parent class, or is a lambda/proc, etc.
-        #         pp "Could not find definition for: #{callback_method_name}"
-        #       end
-        #     else
-        #       pp "Node was not sym type"
-        #     end
-        #   end
-        # end
-
         def on_send(node)
           # 1. Check if the called method is one of our sensitive callbacks
           return unless SIDE_EFFECT_SENSITIVE_CALLBACKS.include?(node.method_name)
@@ -114,12 +75,12 @@ module RuboCop
 
           method_def_node = method_definition_for(parent, callback_method_name)
 
-          if method_def_node
-            # Children of :def node: [method_name, arguments_node, body_node]
-            method_body_node = method_def_node.children[2]
-            pp "got method #{method_body_node} #{node.method_name}"
-            check_method_contents(method_body_node, node.method_name)
-          end
+          return unless method_def_node
+
+          # Children of :def node: [method_name, arguments_node, body_node]
+          method_body_node = method_def_node.children[2]
+          pp "got method #{method_body_node} #{node.method_name}"
+          check_method_contents(method_body_node, node.method_name)
         end
 
         def method_definition_for(class_node, method_name)

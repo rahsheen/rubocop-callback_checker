@@ -78,4 +78,15 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       end
     RUBY
   end
+
+  it "registers an offense when a side effect indicator is used in a sensitive callback" do
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        before_validation do
+          RestClient.save!('http://example.com', {data: 'test'})
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_save. Use `after_commit` instead.
+        end
+      end
+    RUBY
+  end
 end

@@ -5,7 +5,7 @@ require "pathname"
 require "yaml"
 
 # Load all the cops
-Dir[Pathname.new(__dir__).join("cop", "callback_checker", "**", "*.rb")].sort.each { |file| require file }
+Dir[Pathname.new(__dir__).join("cop", "callback_checker", "**", "*.rb")].each { |file| require file }
 
 module Rubocop
   module CallbackChecker
