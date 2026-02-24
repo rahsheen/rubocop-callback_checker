@@ -22,7 +22,7 @@ module RuboCop
 
         # Targets persistence on Constants, local vars, or association calls
         def_node_matcher :side_effect_persistence?, <<~PATTERN
-          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :destroy :destroy! :create :create!})
+          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :destroy :destroy! :create :create!} ...)
         PATTERN
 
         def on_send(node)
