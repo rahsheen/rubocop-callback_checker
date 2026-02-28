@@ -3,6 +3,8 @@
 module RuboCop
   module Cop
     module CallbackChecker
+      # This cop checks for side effects (like API calls, mailers, background jobs, or modifying other records)
+      # in Active Record callbacks that execute before committing changes to the database.
       class NoSideEffectsInCallbacks < Base
         MSG = "Avoid side effects (API calls, mailers, background jobs, or modifying other records) " \
               "in %<callback>s. Use `after_commit` instead."
@@ -26,23 +28,39 @@ module RuboCop
         PATTERN
 
         def on_send(node)
-          return unless SIDE_EFFECT_SENSITIVE_CALLBACKS.include?(node.method_name)
+          return unless side_effect_sensitive_callback?(node)
 
-          # 1. Block form: before_save { ... }
-          check_method_contents(node.block_node.body, node.method_name) if node.block_literal?
-
-          # 2. Argument form
-          node.arguments.each do |arg|
-            if arg.sym_type?
-              check_symbol_callback(node, arg.value)
-            elsif arg.block_type? || arg.lambda? || arg.proc?
-              # Handle lambda/proc types and check their contents
-              check_method_contents(arg.body, node.method_name)
-            end
-          end
+          check_callback_block(node) if node.block_literal?
+          check_callback_arguments(node)
         end
 
         private
+
+        def side_effect_sensitive_callback?(node)
+          SIDE_EFFECT_SENSITIVE_CALLBACKS.include?(node.method_name)
+        end
+
+        def check_callback_block(node)
+          check_method_contents(node.block_node.body, node.method_name)
+        end
+
+        def check_callback_arguments(node)
+          node.arguments.each do |arg|
+            process_callback_argument(node, arg)
+          end
+        end
+
+        def process_callback_argument(node, arg)
+          if arg.sym_type?
+            check_symbol_callback(node, arg.value)
+          elsif callback_proc?(arg)
+            check_method_contents(arg.body, node.method_name)
+          end
+        end
+
+        def callback_proc?(arg)
+          arg.block_type? || arg.lambda? || arg.proc?
+        end
 
         def check_symbol_callback(node, method_name)
           # Find the class/module containing the callback
@@ -61,12 +79,16 @@ module RuboCop
 
           # Use each_node to include the root node if it's a 'send'
           node.each_node(:send) do |send_node|
-            next unless external_library_call?(send_node) ||
-                        async_delivery?(send_node) ||
-                        side_effect_persistence?(send_node)
+            next unless side_effect_call?(send_node)
 
             add_offense(send_node, message: format(MSG, callback: callback_name))
           end
+        end
+
+        def side_effect_call?(send_node)
+          external_library_call?(send_node) ||
+            async_delivery?(send_node) ||
+            side_effect_persistence?(send_node)
         end
       end
     end

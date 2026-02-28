@@ -360,7 +360,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
   end
 
   describe "multiple offenses" do
-    it "registers multiple offenses in the same callback" do
+    it "registers multiple offenses in the same callback" do # rubocop:disable RSpec/ExampleLength
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -373,7 +373,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers offenses across multiple callbacks" do
+    it "registers offenses across multiple callbacks" do # rubocop:disable RSpec/ExampleLength
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_create :do_stuff
