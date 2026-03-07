@@ -26,6 +26,11 @@ module RuboCop
           after_touch
         ].freeze
 
+        PERSISTENCE_METHODS = %i[
+          save save! update update! update_columns
+          destroy destroy! create create! toggle! touch
+        ].freeze
+
         # Added common HTTP clients and SDKs
         def_node_matcher :external_library_call?, <<~PATTERN
           (send (const {nil? cbase} {:RestClient :Faraday :HTTParty :Net :HTTP :Excon :Typhoeus :Stripe :Aws :Intercom :Sidekiq :ActionCable}) ...)
@@ -33,7 +38,7 @@ module RuboCop
 
         # Match calls to any constant (e.g., NewsletterSDK, CustomSDK, etc.)
         def_node_matcher :constant_method_call?, <<~PATTERN
-          (send (const {nil? cbase} _) ...)
+          (send (const {nil? cbase} _) !)
         PATTERN
 
         # Added synchronous delivery and ActiveJob/Sidekiq variants
@@ -41,14 +46,14 @@ module RuboCop
           (send ... {:deliver_now :deliver_now! :deliver_later :deliver_later! :perform_later :perform_async :perform_at :perform_in :broadcast_later})
         PATTERN
 
-        # Catches persistence on other objects or explicit self-saves (which trigger recursion/extra DB hits)
+        # Catches persistence on other objects: constants, local vars, or method calls (like associations)
         def_node_matcher :side_effect_persistence?, <<~PATTERN
-          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch})
+          (send !nil? {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch} ...)
         PATTERN
 
         # Catches bare method calls like save, update, etc. (implicitly on self)
         def_node_matcher :bare_persistence_call?, <<~PATTERN
-          (send nil? {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch})
+          (send nil? {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch} ...)
         PATTERN
 
         def on_send(node)
@@ -101,9 +106,10 @@ module RuboCop
         def check_method_contents(node, callback_name)
           return unless node
 
-          # Use each_node to include the root node if it's a 'send'
+          # Collect all send nodes first to avoid duplicate reporting in chains
           node.each_node(:send) do |send_node|
             next unless side_effect_call?(send_node)
+            next if part_of_reported_chain?(send_node)
 
             add_offense(send_node, message: format(MSG, callback: callback_name))
           end
@@ -117,8 +123,23 @@ module RuboCop
             suspicious_constant_call?(send_node)
         end
 
+        # Check if this node is part of a method chain where a parent would be reported
+        def part_of_reported_chain?(send_node)
+          parent = send_node.parent
+          return false unless parent&.send_type?
+          
+          # If parent is also a side effect, we'll report the parent instead
+          # This handles cases like UserMailer.welcome(self).deliver_now
+          # We want to report the .deliver_now, not the .welcome
+          return false if async_delivery?(send_node) # Always report delivery methods
+          
+          # If this is a receiver of a delivery method, don't report it
+          parent.receiver == send_node && async_delivery?(parent)
+        end
+
         def suspicious_constant_call?(send_node)
           return false unless constant_method_call?(send_node)
+          return false if safe_constant_new_call?(send_node)
 
           # Exclude known safe Rails constants and common utilities
           receiver = send_node.receiver
@@ -140,6 +161,11 @@ module RuboCop
           # If it's calling a method that looks like a side effect, flag it
           # This will catch things like NewsletterSDK.subscribe, CustomAPI.call, etc.
           true
+        end
+
+        # Check if this is a safe .new call on a constant (e.g., OtherRecord.new)
+        def safe_constant_new_call?(send_node)
+          send_node.method?(:new)
         end
       end
     end
