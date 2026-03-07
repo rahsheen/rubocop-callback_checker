@@ -424,7 +424,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
         before_create do
           if email_changed?
             NewsletterSDK.subscribe(email)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_create. Use `after_commit` instead.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_create. Use `after_commit` instead.
           end
         end
       end
@@ -436,9 +436,9 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       class User < ApplicationRecord
         after_create do
           profile.touch
-          ^^^^^^^^^^^^^ Avoid side effects...
+          ^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in after_create. Use `after_commit` instead.
           other_record.update_columns(status: 'ready')
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects...
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in after_create. Use `after_commit` instead.
         end
       end
     RUBY
