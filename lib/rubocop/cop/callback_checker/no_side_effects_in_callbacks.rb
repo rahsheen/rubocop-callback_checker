@@ -38,7 +38,7 @@ module RuboCop
 
         # Match calls to any constant (e.g., NewsletterSDK, CustomSDK, etc.)
         def_node_matcher :constant_method_call?, <<~PATTERN
-          (send (const {nil? cbase} _) !)
+          (send (const {nil? cbase} _) _ ...)
         PATTERN
 
         # Added synchronous delivery and ActiveJob/Sidekiq variants
