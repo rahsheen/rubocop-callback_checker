@@ -3,28 +3,42 @@
 module RuboCop
   module Cop
     module CallbackChecker
-      # This cop checks for side effects (like API calls, mailers, background jobs, or modifying other records)
-      # in Active Record callbacks that execute before committing changes to the database.
+      # This cop checks for side effects (API calls, mailers, background jobs, or modifying other records)
+      # in Active Record callbacks that execute within a database transaction.
+      #
+      # @example
+      #   # bad
+      #   after_create { UserMailer.welcome(self).deliver_now }
+      #   after_save :notify_external_api
+      #
+      #   # good
+      #   after_commit :notify_external_api, on: :create
       class NoSideEffectsInCallbacks < Base
         MSG = "Avoid side effects (API calls, mailers, background jobs, or modifying other records) " \
               "in %<callback>s. Use `after_commit` instead."
 
         SIDE_EFFECT_SENSITIVE_CALLBACKS = %i[
           before_validation before_save after_save
-          before_create before_update before_destroy
+          before_create after_create
+          before_update after_update
+          before_destroy after_destroy
+          around_save around_create around_update around_destroy
+          after_touch
         ].freeze
 
+        # Added common HTTP clients and SDKs
         def_node_matcher :external_library_call?, <<~PATTERN
-          (send (const {nil? cbase} {:RestClient :Faraday :HTTParty :Net :Sidekiq :ActionCable}) ...)
+          (send (const {nil? cbase} {:RestClient :Faraday :HTTParty :Net :HTTP :Excon :Typhoeus :Stripe :Aws :Intercom}) ...)
         PATTERN
 
+        # Added synchronous delivery and ActiveJob/Sidekiq variants
         def_node_matcher :async_delivery?, <<~PATTERN
-          (send (const ...) {:deliver_later :perform_later :broadcast_later})
+          (send ... {:deliver_now :deliver_now! :deliver_later :deliver_later! :perform_later :perform_async :perform_at :perform_in :broadcast_later})
         PATTERN
 
-        # Targets persistence on Constants, local vars, or association calls
+        # Catches persistence on other objects or explicit self-saves (which trigger recursion/extra DB hits)
         def_node_matcher :side_effect_persistence?, <<~PATTERN
-          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :destroy :destroy! :create :create!} ...)
+          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :destroy :destroy! :create :create! :toggle! :touch})
         PATTERN
 
         def on_send(node)

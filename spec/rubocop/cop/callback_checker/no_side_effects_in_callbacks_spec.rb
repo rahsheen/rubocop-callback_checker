@@ -395,4 +395,52 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
   end
+
+  it "registers an offense for synchronous mailer delivery" do
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        after_save { UserMailer.welcome(self).deliver_now }
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in after_save. Use `after_commit` instead.
+      end
+    RUBY
+  end
+
+  it "registers an offense when calling save on self" do # rubocop:disable RSpec/ExampleLength
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        before_save :trigger_recursion
+
+        def trigger_recursion
+          save
+          ^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_save. Use `after_commit` instead.
+        end
+      end
+    RUBY
+  end
+
+  it "registers an offense when the side effect is inside a conditional" do
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        before_create do
+          if email_changed?
+            NewsletterSDK.subscribe(email)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_create. Use `after_commit` instead.
+          end
+        end
+      end
+    RUBY
+  end
+
+  it "registers an offense for touch and update_columns" do
+    expect_offense(<<~RUBY)
+      class User < ApplicationRecord
+        after_create do
+          profile.touch
+          ^^^^^^^^^^^^^ Avoid side effects...
+          other_record.update_columns(status: 'ready')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects...
+        end
+      end
+    RUBY
+  end
 end
