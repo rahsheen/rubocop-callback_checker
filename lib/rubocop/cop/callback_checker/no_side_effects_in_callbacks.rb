@@ -28,7 +28,12 @@ module RuboCop
 
         # Added common HTTP clients and SDKs
         def_node_matcher :external_library_call?, <<~PATTERN
-          (send (const {nil? cbase} {:RestClient :Faraday :HTTParty :Net :HTTP :Excon :Typhoeus :Stripe :Aws :Intercom}) ...)
+          (send (const {nil? cbase} {:RestClient :Faraday :HTTParty :Net :HTTP :Excon :Typhoeus :Stripe :Aws :Intercom :Sidekiq :ActionCable}) ...)
+        PATTERN
+
+        # Match calls to any constant (e.g., NewsletterSDK, CustomSDK, etc.)
+        def_node_matcher :constant_method_call?, <<~PATTERN
+          (send (const {nil? cbase} _) ...)
         PATTERN
 
         # Added synchronous delivery and ActiveJob/Sidekiq variants
@@ -38,7 +43,12 @@ module RuboCop
 
         # Catches persistence on other objects or explicit self-saves (which trigger recursion/extra DB hits)
         def_node_matcher :side_effect_persistence?, <<~PATTERN
-          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :destroy :destroy! :create :create! :toggle! :touch})
+          (send {const (lvar _) (send _ _)} {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch})
+        PATTERN
+
+        # Catches bare method calls like save, update, etc. (implicitly on self)
+        def_node_matcher :bare_persistence_call?, <<~PATTERN
+          (send nil? {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch})
         PATTERN
 
         def on_send(node)
@@ -102,7 +112,34 @@ module RuboCop
         def side_effect_call?(send_node)
           external_library_call?(send_node) ||
             async_delivery?(send_node) ||
-            side_effect_persistence?(send_node)
+            side_effect_persistence?(send_node) ||
+            bare_persistence_call?(send_node) ||
+            suspicious_constant_call?(send_node)
+        end
+
+        def suspicious_constant_call?(send_node)
+          return false unless constant_method_call?(send_node)
+
+          # Exclude known safe Rails constants and common utilities
+          receiver = send_node.receiver
+          return false unless receiver&.const_type?
+
+          const_name = receiver.const_name
+          safe_constants = %w[
+            Rails ActiveRecord ActiveSupport ActiveModel ActionController
+            ActionView ActionMailer ApplicationRecord
+            File Dir Pathname URI JSON YAML CSV
+            Time Date DateTime
+            Math Random SecureRandom
+            Logger
+          ]
+
+          # If it's a known safe constant, it's not suspicious
+          return false if safe_constants.any? { |safe| const_name.start_with?(safe) }
+
+          # If it's calling a method that looks like a side effect, flag it
+          # This will catch things like NewsletterSDK.subscribe, CustomAPI.call, etc.
+          true
         end
       end
     end
