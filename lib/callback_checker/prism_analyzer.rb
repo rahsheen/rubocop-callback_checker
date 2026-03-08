@@ -64,6 +64,16 @@ module CallbackChecker
       super
     end
 
+    def visit_if_node(node)
+      # Make sure we visit all branches of conditionals
+      super
+    end
+
+    def visit_unless_node(node)
+      # Make sure we visit all branches of unless statements
+      super
+    end
+
     private
 
     def collect_methods(class_node)
@@ -138,6 +148,10 @@ module CallbackChecker
       if node.receiver.is_a?(Prism::ConstantReadNode)
         constant_name = node.receiver.name.to_s
         return true if SUSPICIOUS_CONSTANTS.include?(constant_name)
+        
+        # Check for any constant that isn't a known safe pattern
+        # This catches things like NewsletterSDK, CustomAPI, etc.
+        return true if constant_appears_to_be_external_service?(constant_name)
       end
 
       # Check for side effect methods
@@ -165,6 +179,15 @@ module CallbackChecker
         return true if %i[save save! update update!].include?(method_name)
       end
 
+      false
+    end
+
+    def constant_appears_to_be_external_service?(constant_name)
+      # Heuristic: if it's all caps or ends with SDK, API, Client, Service
+      # it's probably an external service
+      return true if constant_name.end_with?('SDK', 'API', 'Client', 'Service')
+      return true if constant_name == constant_name.upcase && constant_name.length > 1
+      
       false
     end
 
