@@ -7,3 +7,8 @@ CallbackChecker/NoSideEffectsInCallbacks:
   Description: 'Disallows logic with side effects (like external APIs or mailers) in before_* and after_save callbacks.'
   Enabled: true
   Severity: warning
+
+CallbackChecker/AvoidSelfPersistence:
+  Description: 'Avoid calling persistence methods on self within callbacks to prevent infinite loops.'
+  Enabled: true
+  Severity: warning
