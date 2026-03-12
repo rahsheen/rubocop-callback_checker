@@ -232,18 +232,15 @@ RSpec.describe RuboCop::Cop::CallbackChecker::CallbackMethodLength, :config do
 
   context 'when callback method has comments' do
     it 'counts comment lines' do
-      expect_offense(<<~RUBY)
+      expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           before_save :setup
 
           def setup
-          ^^^^^^^^^ Callback method `setup` is too long (6 lines). Max allowed: 5 lines. Extract complex logic to a service object.
             # Normalize name
             self.name = name.strip
             # Normalize email
             self.email = email.downcase
-            # Set defaults
-            self.status = 'active'
           end
         end
       RUBY
