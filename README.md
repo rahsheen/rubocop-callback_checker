@@ -1,43 +1,105 @@
-# Rubocop::CallbackChecker
+# RuboCop::CallbackChecker
 
-TODO: Delete this and the text below, and describe your gem
+A collection of RuboCop cops to ensure your ActiveRecord callbacks are safe, performant, and maintainable.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/rubocop/callback_checker`. To experiment with that code, run `bin/console` for an interactive prompt.
+Banning callbacks entirely is a blunt instrument that slows down development. This gem provides a "surgical" approach—allowing callbacks for internal state management while preventing the most common architectural "gotchas" like recursive loops, phantom API calls, and bloated models.
+
+---
 
 ## Installation
-
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
 
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle add rubocop-callback_checker
+
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install rubocop-callback_checker
+
 ```
+
+---
 
 ## Usage
 
-TODO: Write usage instructions here
+In your `.rubocop.yml`, add the following:
+
+```yaml
+require:
+  - rubocop-callback_checker
+
+```
+
+You can then run RuboCop as usual:
+
+```bash
+bundle exec rubocop
+
+```
+
+---
+
+## Cops Included
+
+### 1. `CallbackChecker/NoSideEffectsInCallbacks`
+
+**Goal:** Prevent external side effects from running inside a database transaction.
+
+If a side effect (like sending an email) triggers in an `after_save` but the transaction later rolls back, the email is sent for data that doesn't exist.
+
+* **Bad:** Calling `UserMailer.welcome.deliver_now` in `after_create`.
+* **Good:** Use `after_commit` or `after_create_commit`.
+
+### 2. `CallbackChecker/NoSelfPersistence`
+
+**Goal:** Prevent infinite recursion and "Stack Level Too Deep" errors.
+
+* **Bad:** Calling `self.save` or `update(status: 'active')` inside a `before_save`.
+* **Good:** Assign attributes directly: `self.status = 'active'`.
+
+### 3. `CallbackChecker/AttributeAssignmentOnly`
+
+**Goal:** Reduce unnecessary database I/O.
+
+Callbacks that run "before" persistence should only modify the object's memory state, not trigger a secondary database write.
+
+* **Bad:** `before_validation { update(attr: 'val') }`
+* **Good:** `before_validation { self.attr = 'val' }`
+
+### 4. `CallbackChecker/CallbackMethodLength`
+
+**Goal:** Prevent "Fat Models" and maintain testability.
+
+Callbacks should be "post-it notes," not "instruction manuals." If a callback method is too long, it should be moved to a Service Object.
+
+* **Default Max:** 10 lines.
+
+### 5. `CallbackChecker/SymbolicConditionals`
+
+**Goal:** Improve readability and allow for easier debugging.
+
+* **Bad:** `before_save :do_thing, if: -> { status == 'active' && !deleted? }`
+* **Good:** `before_save :do_thing, if: :active_and_present?`
+
+---
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/rubocop-callback_checker. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/rubocop-callback_checker/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at [https://github.com/](https://github.com/)[USERNAME]/rubocop-callback_checker.
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
-## Code of Conduct
+---
 
-Everyone interacting in the Rubocop::CallbackChecker project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/rubocop-callback_checker/blob/main/CODE_OF_CONDUCT.md).
