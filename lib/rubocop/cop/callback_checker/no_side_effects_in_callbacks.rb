@@ -51,11 +51,6 @@ module RuboCop
           (send !nil? {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch} ...)
         PATTERN
 
-        # Catches bare method calls like save, update, etc. (implicitly on self)
-        def_node_matcher :bare_persistence_call?, <<~PATTERN
-          (send nil? {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch} ...)
-        PATTERN
-
         def on_send(node)
           return unless side_effect_sensitive_callback?(node)
 
@@ -119,7 +114,6 @@ module RuboCop
           external_library_call?(send_node) ||
             async_delivery?(send_node) ||
             side_effect_persistence?(send_node) ||
-            bare_persistence_call?(send_node) ||
             suspicious_constant_call?(send_node)
         end
 
