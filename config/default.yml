@@ -23,3 +23,8 @@ CallbackChecker/CallbackMethodLength:
   Enabled: true
   Severity: warning
   Max: 5
+
+CallbackChecker/ConditionalStyle:
+  Description: 'Use named methods instead of procs/strings for callback conditionals.'
+  Enabled: true
+  Severity: warning
