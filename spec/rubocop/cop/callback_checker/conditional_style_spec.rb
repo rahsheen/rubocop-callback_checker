@@ -60,7 +60,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::ConditionalStyle, :config do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           after_save :log, unless: "Rails.env.production?"
-                                   ^^^^^^^^^^^^^^^^^^^^^^^^ Use a named method instead of a string for callback conditionals. Extract the logic to a private method with a descriptive name.
+                                   ^^^^^^^^^^^^^^^^^^^^^^^ Use a named method instead of a string for callback conditionals. Extract the logic to a private method with a descriptive name.
         end
       RUBY
     end
@@ -71,7 +71,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::ConditionalStyle, :config do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save :process, if: -> { status == 'active' && !deleted? && verified? }
-                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use a named method instead of a proc/lambda for callback conditionals. Extract the logic to a private method with a descriptive name.
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use a named method instead of a proc/lambda for callback conditionals. Extract the logic to a private method with a descriptive name.
         end
       RUBY
     end
@@ -176,7 +176,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::ConditionalStyle, :config do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_destroy :archive, if: "can_be_destroyed?"
-                                       ^^^^^^^^^^^^^^^^^^^^ Use a named method instead of a string for callback conditionals. Extract the logic to a private method with a descriptive name.
+                                       ^^^^^^^^^^^^^^^^^^^ Use a named method instead of a string for callback conditionals. Extract the logic to a private method with a descriptive name.
         end
       RUBY
     end
@@ -190,7 +190,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::ConditionalStyle, :config do
           after_save :method_two, if: -> { deleted? }
                                       ^^^^^^^^^^^^^^^ Use a named method instead of a proc/lambda for callback conditionals. Extract the logic to a private method with a descriptive name.
           before_create :method_three, unless: "Rails.env.test?"
-                                               ^^^^^^^^^^^^^^^^^^ Use a named method instead of a string for callback conditionals. Extract the logic to a private method with a descriptive name.
+                                               ^^^^^^^^^^^^^^^^^ Use a named method instead of a string for callback conditionals. Extract the logic to a private method with a descriptive name.
         end
       RUBY
     end
