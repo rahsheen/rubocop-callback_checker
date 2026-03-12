@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 RSpec.describe RuboCop::Cop::CallbackChecker::AvoidSelfPersistence, :config do
-  let(:config) { RuboCop::Config.new }
+  let(:config) do
+    RuboCop::Config.new(
+      'CallbackChecker/AvoidSelfPersistence' => { 'Enabled' => true },
+      'CallbackChecker/NoSideEffectsInCallbacks' => { 'Enabled' => false }
+    )
+  end
 
   context 'when using explicit self.save in callback method' do
     it 'registers an offense' do

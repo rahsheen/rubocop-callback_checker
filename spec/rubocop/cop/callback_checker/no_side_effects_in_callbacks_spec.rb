@@ -3,6 +3,13 @@
 require "spec_helper"
 
 RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config do
+  let(:config) do
+    RuboCop::Config.new(
+      'CallbackChecker/NoSideEffectsInCallbacks' => { 'Enabled' => true },
+      'CallbackChecker/AvoidSelfPersistence' => { 'Enabled' => false }
+    )
+  end
+
   describe "callbacks that should NOT register offenses" do
     it "does not register an offense when logic is purely internal" do
       expect_no_offenses(<<~RUBY)
@@ -64,6 +71,18 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           before_save :nonexistent_method
+        end
+      RUBY
+    end
+
+    it "does not register an offense when calling save on self" do
+      expect_no_offenses(<<~RUBY)
+        class User < ApplicationRecord
+          before_save :trigger_recursion
+
+          def trigger_recursion
+            save
+          end
         end
       RUBY
     end
@@ -401,19 +420,6 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       class User < ApplicationRecord
         after_save { UserMailer.welcome(self).deliver_now }
                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in after_save. Use `after_commit` instead.
-      end
-    RUBY
-  end
-
-  it "registers an offense when calling save on self" do # rubocop:disable RSpec/ExampleLength
-    expect_offense(<<~RUBY)
-      class User < ApplicationRecord
-        before_save :trigger_recursion
-
-        def trigger_recursion
-          save
-          ^^^^ Avoid side effects (API calls, mailers, background jobs, or modifying other records) in before_save. Use `after_commit` instead.
-        end
       end
     RUBY
   end
