@@ -48,25 +48,15 @@ module RuboCop
           toggle! increment! decrement! touch
         ].freeze
 
-        def on_class(node)
-          return unless active_record_class?(node)
+        def on_send(node)
+          return unless callback_method?(node)
+          return if safe_callback?(node)
 
-          node.each_descendant(:send) do |send_node|
-            next unless callback_method?(send_node)
-            next if safe_callback?(send_node)
-
-            check_callback(send_node)
-          end
+          check_callback_block(node) if node.block_literal?
+          check_callback_arguments(node)
         end
 
         private
-
-        def active_record_class?(node)
-          return false unless node.parent_class
-
-          parent_class_name = node.parent_class.const_name
-          parent_class_name && parent_class_name.include?('ApplicationRecord')
-        end
 
         def callback_method?(node)
           CALLBACK_METHODS.include?(node.method_name)
@@ -76,11 +66,11 @@ module RuboCop
           SAFE_CALLBACKS.include?(node.method_name)
         end
 
-        def check_callback(node)
-          if node.block_literal?
-            check_block_for_persistence(node.block_node.body, node.method_name)
-          end
+        def check_callback_block(node)
+          check_block_for_persistence(node.block_node.body, node.method_name) if node.block_node.body
+        end
 
+        def check_callback_arguments(node)
           node.arguments.each do |arg|
             process_callback_argument(node, arg)
           end
