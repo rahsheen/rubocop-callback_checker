@@ -36,6 +36,12 @@ module RuboCop
           after_touch
         ].freeze
 
+        SAFE_CALLBACKS = %i[
+          after_commit after_rollback
+          after_create_commit after_update_commit after_destroy_commit
+          after_save_commit
+        ].freeze
+
         PERSISTENCE_METHODS = %i[
           save save! update update! update_attribute update_attributes
           update_attributes! update_column update_columns
@@ -44,6 +50,7 @@ module RuboCop
 
         def on_send(node)
           return unless callback_method?(node)
+          return if safe_callback?(node)
 
           check_callback_block(node) if node.block_node
           check_callback_arguments(node)
@@ -53,6 +60,10 @@ module RuboCop
 
         def callback_method?(node)
           CALLBACK_METHODS.include?(node.method_name)
+        end
+
+        def safe_callback?(node)
+          SAFE_CALLBACKS.include?(node.method_name)
         end
 
         def check_callback_block(node)
