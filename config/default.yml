@@ -17,3 +17,9 @@ CallbackChecker/AttributeAssignmentOnly:
   Description: 'Use attribute assignment instead of persistence methods in before_* callbacks.'
   Enabled: true
   Severity: warning
+
+CallbackChecker/CallbackMethodLength:
+  Description: 'Callback methods should be short. Complex logic belongs in service objects.'
+  Enabled: true
+  Severity: warning
+  Max: 5
