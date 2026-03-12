@@ -12,3 +12,8 @@ CallbackChecker/AvoidSelfPersistence:
   Description: 'Avoid calling persistence methods on self within callbacks to prevent infinite loops.'
   Enabled: true
   Severity: warning
+
+CallbackChecker/AttributeAssignmentOnly:
+  Description: 'Use attribute assignment instead of persistence methods in before_* callbacks.'
+  Enabled: true
+  Severity: warning

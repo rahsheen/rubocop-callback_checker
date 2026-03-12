@@ -1,2 +1,3 @@
 require_relative "no_side_effects_in_callbacks"
 require_relative "callback_checker/avoid_self_persistence"
+require_relative "callback_checker/attribute_assignment_only"
