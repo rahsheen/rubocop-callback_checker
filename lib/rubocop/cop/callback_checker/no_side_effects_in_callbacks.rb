@@ -26,9 +26,10 @@ module RuboCop
           after_touch
         ].freeze
 
-        PERSISTENCE_METHODS = %i[
-          save save! update update! update_columns
-          destroy destroy! create create! toggle! touch
+        SELF_PERSISTENCE_METHODS = %i[
+          save save! update update! update_attribute update_attributes
+          update_attributes! update_column update_columns
+          toggle! increment! decrement! touch
         ].freeze
 
         # Added common HTTP clients and SDKs
@@ -47,8 +48,9 @@ module RuboCop
         PATTERN
 
         # Catches persistence on other objects: constants, local vars, or method calls (like associations)
+        # Explicitly excludes calls without receivers (implicit self) and explicit self calls
         def_node_matcher :side_effect_persistence?, <<~PATTERN
-          (send !nil? {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch} ...)
+          (send !{nil? (self)} {:save :save! :update :update! :update_columns :destroy :destroy! :create :create! :toggle! :touch} ...)
         PATTERN
 
         def on_send(node)
