@@ -63,6 +63,10 @@ module RuboCop
           (send {nil? (self)} _ (hash (pair (sym $_) _) ...))
         PATTERN
 
+        def_node_matcher :first_symbol_arg, <<~PATTERN
+          (send {nil? (self)} _ (sym $_) ...)
+        PATTERN
+
         def on_class(node)
           @current_callbacks = {}
           
@@ -129,10 +133,15 @@ module RuboCop
         end
 
         def extract_attribute_name(node)
+          # Try to extract from hash argument (e.g., update(name: 'foo'))
           if hash_argument?(node)
             key = first_hash_key(node)
             return key.to_s if key
           end
+          
+          # Try to extract from symbol argument (e.g., update_column(:name, 'foo'))
+          symbol_arg = first_symbol_arg(node)
+          return symbol_arg.to_s if symbol_arg
           
           'attribute'
         end

@@ -62,7 +62,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AttributeAssignmentOnly, :config d
 
           def set_token
             update_columns(token: generate_token)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.token = value`) instead of `update_columns` in `before_save`. The object will be persisted automatically after the callback completes.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.token = value`) instead of `update_columns` in `before_save`. The object will be persisted automatically after the callback completes.
           end
         end
       RUBY
@@ -88,7 +88,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AttributeAssignmentOnly, :config d
 
           def track_changes
             update_column(:updated_by, current_user.id)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.updated_by = value`) instead of `update_column` in `before_update`. The object will be persisted automatically after the callback completes.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.updated_by = value`) instead of `update_column` in `before_update`. The object will be persisted automatically after the callback completes.
           end
         end
       RUBY
@@ -103,7 +103,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AttributeAssignmentOnly, :config d
 
           def normalize
             update_attributes(name: name.strip, email: email.downcase)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.name = value`) instead of `update_attributes` in `before_save`. The object will be persisted automatically after the callback completes.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.name = value`) instead of `update_attributes` in `before_save`. The object will be persisted automatically after the callback completes.
           end
         end
       RUBY
@@ -118,7 +118,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AttributeAssignmentOnly, :config d
 
           def set_values
             update_attributes!(status: 'pending')
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.status = value`) instead of `update_attributes!` in `before_validation`. The object will be persisted automatically after the callback completes.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.status = value`) instead of `update_attributes!` in `before_validation`. The object will be persisted automatically after the callback completes.
           end
         end
       RUBY
@@ -227,7 +227,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AttributeAssignmentOnly, :config d
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_validation proc { update!(status: 'pending') }
-                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.status = value`) instead of `update!` in `before_validation`. The object will be persisted automatically after the callback completes.
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^ Use attribute assignment (`self.status = value`) instead of `update!` in `before_validation`. The object will be persisted automatically after the callback completes.
         end
       RUBY
     end
