@@ -102,7 +102,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AvoidSelfPersistence, :config do
 
           def set_token
             update_column(:token, generate_token)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling `update_column` on self within `before_validation`. This can trigger infinite loops or run callbacks multiple times. Assign attributes directly instead: `self.attribute = value`.
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling `update_column` on self within `before_validation`. This can trigger infinite loops or run callbacks multiple times. Assign attributes directly instead: `self.attribute = value`.
           end
         end
       RUBY
@@ -237,7 +237,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AvoidSelfPersistence, :config do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           after_save -> { self.update!(status: 'done') }
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling `update!` on self within `after_save`. This can trigger infinite loops or run callbacks multiple times. Assign attributes directly instead: `self.attribute = value`.
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling `update!` on self within `after_save`. This can trigger infinite loops or run callbacks multiple times. Assign attributes directly instead: `self.attribute = value`.
         end
       RUBY
     end
@@ -248,7 +248,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::AvoidSelfPersistence, :config do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_validation proc { save! }
-                                   ^^^^^^ Avoid calling `save!` on self within `before_validation`. This can trigger infinite loops or run callbacks multiple times. Assign attributes directly instead: `self.attribute = value`.
+                                   ^^^^^ Avoid calling `save!` on self within `before_validation`. This can trigger infinite loops or run callbacks multiple times. Assign attributes directly instead: `self.attribute = value`.
         end
       RUBY
     end
