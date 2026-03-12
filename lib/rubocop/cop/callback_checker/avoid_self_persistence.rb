@@ -52,7 +52,7 @@ module RuboCop
           return unless callback_method?(node)
           return if safe_callback?(node)
 
-          check_callback_block(node) if node.block_literal?
+          check_callback_block(node) if node.block_node
           check_callback_arguments(node)
         end
 
@@ -67,7 +67,9 @@ module RuboCop
         end
 
         def check_callback_block(node)
-          check_block_for_persistence(node.block_node.body, node.method_name) if node.block_node.body
+          return unless node.block_node&.body
+
+          check_block_for_persistence(node.block_node.body, node.method_name)
         end
 
         def check_callback_arguments(node)
@@ -79,13 +81,19 @@ module RuboCop
         def process_callback_argument(node, arg)
           if arg.sym_type?
             check_symbol_callback(node, arg.value)
-          elsif callback_proc?(arg)
-            check_block_for_persistence(arg.body, node.method_name)
+          elsif arg.block_pass_type?
+            # Handle block pass like: after_save &:method_name
+            # We can't easily analyze these, so skip
+            return
+          elsif arg.lambda_or_proc?
+            check_proc_callback(arg, node.method_name)
           end
         end
 
-        def callback_proc?(arg)
-          arg.block_type? || arg.lambda? || arg.proc?
+        def check_proc_callback(arg, callback_name)
+          return unless arg.body
+
+          check_block_for_persistence(arg.body, callback_name)
         end
 
         def check_symbol_callback(node, method_name)
@@ -94,14 +102,13 @@ module RuboCop
 
           method_def = scope.each_descendant(:def).find { |d| d.method_name == method_name }
           return unless method_def
+          return unless method_def.body
 
           check_block_for_persistence(method_def.body, node.method_name)
         end
 
         def check_block_for_persistence(node, callback_name)
-          return unless node
-
-          node.each_descendant(:send) do |send_node|
+          node.each_node(:send) do |send_node|
             check_for_self_persistence(send_node, callback_name)
           end
         end
