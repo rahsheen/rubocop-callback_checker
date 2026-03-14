@@ -5,7 +5,7 @@ require_relative '../rubocop/callback_checker/version'
 require 'optparse'
 
 module CallbackChecker
-  VERSION = Rubocop::CallbackChecker::VERSION
+  VERSION = RuboCop::CallbackChecker::VERSION
 
   class CLI
     def self.run(argv)
@@ -47,7 +47,7 @@ module CallbackChecker
 
       print_summary(files.size, total_offenses)
 
-      total_offenses > 0 ? 1 : 0
+      total_offenses.positive? ? 1 : 0
     end
 
     private
@@ -97,7 +97,7 @@ module CallbackChecker
     end
 
     def print_summary(file_count, offense_count)
-      puts "\n" + '=' * 80
+      puts "\n#{'=' * 80}"
       puts "#{file_count} file(s) inspected, #{offense_count} offense(s) detected"
     end
   end
