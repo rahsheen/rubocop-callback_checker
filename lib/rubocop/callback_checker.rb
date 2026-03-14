@@ -2,20 +2,15 @@
 
 require_relative "callback_checker/version"
 require "pathname"
-require "yaml"
 
-# Load all the cops
-Dir[Pathname.new(__dir__).join("cop", "callback_checker", "**", "*.rb")].each { |file| require file }
-
-module Rubocop
+module RuboCop
   module CallbackChecker
     class Error < StandardError; end
 
     PROJECT_ROOT = Pathname.new(__dir__).parent.parent.freeze
     CONFIG_DEFAULT = PROJECT_ROOT.join("config", "default.yml").freeze
 
-    def self.version
-      VERSION
-    end
+    # Inject the plugin's default configuration into RuboCop
+    ::RuboCop::ConfigLoader.inject_defaults!(CONFIG_DEFAULT.to_s)
   end
 end

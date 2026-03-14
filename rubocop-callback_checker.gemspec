@@ -4,7 +4,7 @@ require_relative "lib/rubocop/callback_checker/version"
 
 Gem::Specification.new do |spec|
   spec.name = "rubocop-callback_checker"
-  spec.version = Rubocop::CallbackChecker::VERSION
+  spec.version = RuboCop::CallbackChecker::VERSION
   spec.authors = ["rahsheen"]
   spec.email = ["rahsheen.porter@gmail.com"]
 
