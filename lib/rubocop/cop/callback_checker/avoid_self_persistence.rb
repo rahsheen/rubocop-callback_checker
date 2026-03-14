@@ -23,9 +23,9 @@ module RuboCop
       #     self.status = 'active'
       #   end
       class AvoidSelfPersistence < Base
-        MSG = "Avoid calling `%<method>s` on self within `%<callback>s`. " \
-              "This can trigger infinite loops or run callbacks multiple times. " \
-              "Assign attributes directly instead: `self.attribute = value`."
+        MSG = 'Avoid calling `%<method>s` on self within `%<callback>s`. ' \
+              'This can trigger infinite loops or run callbacks multiple times. ' \
+              'Assign attributes directly instead: `self.attribute = value`.'
 
         CALLBACK_METHODS = %i[
           before_validation after_validation
@@ -84,7 +84,7 @@ module RuboCop
           elsif arg.block_pass_type?
             # Handle block pass like: after_save &:method_name
             # We can't easily analyze these, so skip
-            return
+            nil
           elsif arg.lambda_or_proc?
             check_proc_callback(arg, node.method_name)
           end

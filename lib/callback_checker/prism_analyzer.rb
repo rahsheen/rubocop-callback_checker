@@ -78,9 +78,7 @@ module CallbackChecker
 
     def collect_methods(class_node)
       class_node.body&.body&.each do |statement|
-        if statement.is_a?(Prism::DefNode)
-          @callback_methods[statement.name] = statement
-        end
+        @callback_methods[statement.name] = statement if statement.is_a?(Prism::DefNode)
       end
     end
 
@@ -148,7 +146,7 @@ module CallbackChecker
       if node.receiver.is_a?(Prism::ConstantReadNode)
         constant_name = node.receiver.name.to_s
         return true if SUSPICIOUS_CONSTANTS.include?(constant_name)
-        
+
         # Check for any constant that isn't a known safe pattern
         # This catches things like NewsletterSDK, CustomAPI, etc.
         return true if constant_appears_to_be_external_service?(constant_name)
@@ -165,18 +163,14 @@ module CallbackChecker
       end
 
       # Check for method chains that end with deliver_now
-      if method_name == :deliver_now && node.receiver.is_a?(Prism::CallNode)
-        return true
-      end
+      return true if method_name == :deliver_now && node.receiver.is_a?(Prism::CallNode)
 
       # Check for calls on associations or other objects (not self)
-      if node.receiver && !self_reference?(node.receiver)
-        return true if persistence_method?(method_name)
-      end
+      return true if node.receiver && !self_reference?(node.receiver) && persistence_method?(method_name)
 
       # Check for save/update on self or implicit self
-      if node.receiver.nil? || self_reference?(node.receiver)
-        return true if %i[save save! update update!].include?(method_name)
+      if (node.receiver.nil? || self_reference?(node.receiver)) && %i[save save! update update!].include?(method_name)
+        return true
       end
 
       false
@@ -187,7 +181,7 @@ module CallbackChecker
       # it's probably an external service
       return true if constant_name.end_with?('SDK', 'API', 'Client', 'Service')
       return true if constant_name == constant_name.upcase && constant_name.length > 1
-      
+
       false
     end
 

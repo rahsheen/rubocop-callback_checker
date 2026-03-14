@@ -303,11 +303,11 @@ RSpec.describe RuboCop::Cop::CallbackChecker::CallbackMethodLength, :config do
           before_save :setup
 
           def setup
-            
+        #{'    '}
             self.name = name.strip
-            
+        #{'    '}
             self.email = email.downcase
-            
+        #{'    '}
           end
         end
       RUBY

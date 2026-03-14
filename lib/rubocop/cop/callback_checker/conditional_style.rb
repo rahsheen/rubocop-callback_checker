@@ -26,8 +26,8 @@ module RuboCop
       #     status == 'active' && !deleted?
       #   end
       class ConditionalStyle < Base
-        MSG = "Use a named method instead of a %<type>s for callback conditionals. " \
-              "Extract the logic to a private method with a descriptive name."
+        MSG = 'Use a named method instead of a %<type>s for callback conditionals. ' \
+              'Extract the logic to a private method with a descriptive name.'
 
         CALLBACK_METHODS = %i[
           before_validation after_validation
@@ -44,7 +44,7 @@ module RuboCop
 
         def on_send(node)
           return unless callback_method?(node)
-          
+
           check_callback_conditionals(node)
         end
 
@@ -79,7 +79,7 @@ module RuboCop
 
         def conditional_key?(key)
           return false unless key.sym_type?
-          
+
           CONDITIONAL_KEYS.include?(key.value)
         end
       end

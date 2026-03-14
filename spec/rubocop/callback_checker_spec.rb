@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe RuboCop::CallbackChecker do
-  it "has a version number" do
+  it 'has a version number' do
     expect(RuboCop::CallbackChecker::VERSION).not_to be nil
   end
 end

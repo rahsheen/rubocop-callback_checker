@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require 'spec_helper'
 
 RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config do
   let(:config) do
@@ -10,8 +10,8 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     )
   end
 
-  describe "callbacks that should NOT register offenses" do
-    it "does not register an offense when logic is purely internal" do
+  describe 'callbacks that should NOT register offenses' do
+    it 'does not register an offense when logic is purely internal' do
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           before_save :sanitize_name
@@ -22,7 +22,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "does not register an offense for internal method calls in a callback" do
+    it 'does not register an offense for internal method calls in a callback' do
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           before_save :sanitize_name
@@ -35,7 +35,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "does not register an offense for internal logic in a block callback" do
+    it 'does not register an offense for internal logic in a block callback' do
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -45,7 +45,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "does not register an offense in after_commit callback" do
+    it 'does not register an offense in after_commit callback' do
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           after_commit :send_notification
@@ -57,7 +57,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "does not register an offense in after_create_commit callback" do
+    it 'does not register an offense in after_create_commit callback' do
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           after_create_commit do
@@ -67,7 +67,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "does not register an offense when method definition is not found" do
+    it 'does not register an offense when method definition is not found' do
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           before_save :nonexistent_method
@@ -75,7 +75,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "does not register an offense when calling save on self" do
+    it 'does not register an offense when calling save on self' do
       expect_no_offenses(<<~RUBY)
         class User < ApplicationRecord
           before_save :trigger_recursion
@@ -88,8 +88,8 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  describe "block form callbacks" do
-    it "registers an offense when calling a background job in before_save block" do
+  describe 'block form callbacks' do
+    it 'registers an offense when calling a background job in before_save block' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -100,7 +100,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense in before_validation block" do
+    it 'registers an offense in before_validation block' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_validation do
@@ -111,7 +111,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense in after_save block" do
+    it 'registers an offense in after_save block' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           after_save do
@@ -122,7 +122,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense in before_create block" do
+    it 'registers an offense in before_create block' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_create do
@@ -133,7 +133,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense in before_update block" do
+    it 'registers an offense in before_update block' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_update do
@@ -144,7 +144,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense in before_destroy block" do
+    it 'registers an offense in before_destroy block' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_destroy do
@@ -156,8 +156,8 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  describe "symbol argument form callbacks" do
-    it "registers an offense when calling a background job in before_save" do
+  describe 'symbol argument form callbacks' do
+    it 'registers an offense when calling a background job in before_save' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save :send_notification
@@ -170,7 +170,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for symbol callback in before_create" do
+    it 'registers an offense for symbol callback in before_create' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_create :do_stuff
@@ -184,8 +184,8 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  describe "external library calls" do
-    it "registers an offense for RestClient calls" do
+  describe 'external library calls' do
+    it 'registers an offense for RestClient calls' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -196,7 +196,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for Faraday calls" do
+    it 'registers an offense for Faraday calls' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -207,7 +207,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for HTTParty calls" do
+    it 'registers an offense for HTTParty calls' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -218,7 +218,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for Net calls" do
+    it 'registers an offense for Net calls' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -229,7 +229,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for Sidekiq calls" do
+    it 'registers an offense for Sidekiq calls' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -240,7 +240,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for ActionCable calls" do
+    it 'registers an offense for ActionCable calls' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -252,8 +252,8 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  describe "async delivery methods" do
-    it "registers an offense for deliver_later" do
+  describe 'async delivery methods' do
+    it 'registers an offense for deliver_later' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -264,7 +264,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for perform_later" do
+    it 'registers an offense for perform_later' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -275,7 +275,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for broadcast_later" do
+    it 'registers an offense for broadcast_later' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -287,8 +287,8 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  describe "side effect persistence on other objects" do
-    it "registers an offense for save on a constant" do
+  describe 'side effect persistence on other objects' do
+    it 'registers an offense for save on a constant' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -299,7 +299,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for save! on a local variable" do
+    it 'registers an offense for save! on a local variable' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -311,7 +311,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for update on an association" do
+    it 'registers an offense for update on an association' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -322,7 +322,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for update! on an association" do
+    it 'registers an offense for update! on an association' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -333,7 +333,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for destroy on an association" do
+    it 'registers an offense for destroy on an association' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -344,7 +344,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for destroy! on an association" do
+    it 'registers an offense for destroy! on an association' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -355,7 +355,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for create on a constant" do
+    it 'registers an offense for create on a constant' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -366,7 +366,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers an offense for create! on a constant" do
+    it 'registers an offense for create! on a constant' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -378,8 +378,8 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  describe "multiple offenses" do
-    it "registers multiple offenses in the same callback" do # rubocop:disable RSpec/ExampleLength
+  describe 'multiple offenses' do
+    it 'registers multiple offenses in the same callback' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_save do
@@ -392,7 +392,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
       RUBY
     end
 
-    it "registers offenses across multiple callbacks" do # rubocop:disable RSpec/ExampleLength
+    it 'registers offenses across multiple callbacks' do
       expect_offense(<<~RUBY)
         class User < ApplicationRecord
           before_create :do_stuff
@@ -415,7 +415,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     end
   end
 
-  it "registers an offense for synchronous mailer delivery" do
+  it 'registers an offense for synchronous mailer delivery' do
     expect_offense(<<~RUBY)
       class User < ApplicationRecord
         after_save { UserMailer.welcome(self).deliver_now }
@@ -424,7 +424,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     RUBY
   end
 
-  it "registers an offense when the side effect is inside a conditional" do
+  it 'registers an offense when the side effect is inside a conditional' do
     expect_offense(<<~RUBY)
       class User < ApplicationRecord
         before_create do
@@ -437,7 +437,7 @@ RSpec.describe RuboCop::Cop::CallbackChecker::NoSideEffectsInCallbacks, :config 
     RUBY
   end
 
-  it "registers an offense for touch and update_columns" do
+  it 'registers an offense for touch and update_columns' do
     expect_offense(<<~RUBY)
       class User < ApplicationRecord
         after_create do

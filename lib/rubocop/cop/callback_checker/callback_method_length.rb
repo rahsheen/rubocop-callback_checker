@@ -38,8 +38,8 @@ module RuboCop
       #     # No callback, call UserRegistrationService.new(user).call from controller
       #   end
       class CallbackMethodLength < Base
-        MSG = "Callback method `%<method>s` is too long (%<length>d lines). " \
-              "Max allowed: %<max>d lines. Extract complex logic to a service object."
+        MSG = 'Callback method `%<method>s` is too long (%<length>d lines). ' \
+              'Max allowed: %<max>d lines. Extract complex logic to a service object.'
 
         CALLBACK_METHODS = %i[
           before_validation after_validation
@@ -54,7 +54,7 @@ module RuboCop
 
         def on_send(node)
           return unless callback_method?(node)
-          
+
           # Only check symbol arguments (method name references)
           node.arguments.each do |arg|
             check_callback_argument(node, arg) if arg.sym_type?
@@ -100,11 +100,11 @@ module RuboCop
           return 0 unless method_node.body
 
           body = method_node.body
-          
+
           # Calculate line count
           first_line = body.first_line
           last_line = body.last_line
-          
+
           # Count non-empty lines
           (first_line..last_line).count do |line_number|
             line = processed_source.lines[line_number - 1]

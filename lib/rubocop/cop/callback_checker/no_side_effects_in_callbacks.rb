@@ -14,8 +14,8 @@ module RuboCop
       #   # good
       #   after_commit :notify_external_api, on: :create
       class NoSideEffectsInCallbacks < Base
-        MSG = "Avoid side effects (API calls, mailers, background jobs, or modifying other records) " \
-              "in %<callback>s. Use `after_commit` instead."
+        MSG = 'Avoid side effects (API calls, mailers, background jobs, or modifying other records) ' \
+              'in %<callback>s. Use `after_commit` instead.'
 
         SIDE_EFFECT_SENSITIVE_CALLBACKS = %i[
           before_validation before_save after_save
@@ -123,12 +123,12 @@ module RuboCop
         def part_of_reported_chain?(send_node)
           parent = send_node.parent
           return false unless parent&.send_type?
-          
+
           # If parent is also a side effect, we'll report the parent instead
           # This handles cases like UserMailer.welcome(self).deliver_now
           # We want to report the .deliver_now, not the .welcome
           return false if async_delivery?(send_node) # Always report delivery methods
-          
+
           # If this is a receiver of a delivery method, don't report it
           parent.receiver == send_node && async_delivery?(parent)
         end

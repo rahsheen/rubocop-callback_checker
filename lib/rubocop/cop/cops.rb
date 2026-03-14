@@ -1,5 +1,5 @@
-require_relative "callback_checker/no_side_effects_in_callbacks"
-require_relative "callback_checker/avoid_self_persistence"
-require_relative "callback_checker/attribute_assignment_only"
-require_relative "callback_checker/callback_method_length"
-require_relative "callback_checker/conditional_style"
+require_relative 'callback_checker/no_side_effects_in_callbacks'
+require_relative 'callback_checker/avoid_self_persistence'
+require_relative 'callback_checker/attribute_assignment_only'
+require_relative 'callback_checker/callback_method_length'
+require_relative 'callback_checker/conditional_style'
