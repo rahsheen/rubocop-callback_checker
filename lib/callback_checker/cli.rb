@@ -22,15 +22,15 @@ module CallbackChecker
       parse_options
 
       if @paths.empty?
-        puts "Usage: rubocop-callback-checker [options] FILE..."
+        puts 'Usage: rubocop-callback-checker [options] FILE...'
         puts "Try 'rubocop-callback-checker --help' for more information."
         return 1
       end
 
       files = collect_files(@paths)
-      
+
       if files.empty?
-        puts "No Ruby files found to analyze."
+        puts 'No Ruby files found to analyze.'
         return 1
       end
 
@@ -38,7 +38,7 @@ module CallbackChecker
 
       files.each do |file|
         offenses = PrismAnalyzer.analyze_file(file)
-        
+
         if offenses.any?
           total_offenses += offenses.size
           print_offenses(file, offenses)
@@ -54,14 +54,14 @@ module CallbackChecker
 
     def parse_options
       OptionParser.new do |opts|
-        opts.banner = "Usage: rubocop-callback-checker [options] FILE..."
+        opts.banner = 'Usage: rubocop-callback-checker [options] FILE...'
 
-        opts.on("-h", "--help", "Print this help") do
+        opts.on('-h', '--help', 'Print this help') do
           puts opts
           exit 0
         end
 
-        opts.on("-v", "--version", "Print version") do
+        opts.on('-v', '--version', 'Print version') do
           puts "rubocop-callback-checker version #{VERSION}"
           exit 0
         end
@@ -88,7 +88,7 @@ module CallbackChecker
 
     def print_offenses(file, offenses)
       puts "\n#{file}"
-      
+
       offenses.each do |offense|
         location = offense[:location]
         puts "  #{location[:start_line]}:#{location[:start_column]}: #{offense[:message]}"
@@ -97,7 +97,7 @@ module CallbackChecker
     end
 
     def print_summary(file_count, offense_count)
-      puts "\n" + "=" * 80
+      puts "\n" + '=' * 80
       puts "#{file_count} file(s) inspected, #{offense_count} offense(s) detected"
     end
   end
