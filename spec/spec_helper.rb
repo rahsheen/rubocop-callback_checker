@@ -2,7 +2,7 @@
 
 require "rubocop"
 require "rubocop/rspec/support"
-require "rubocop/callback_checker"
+require "rubocop-callback_checker"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
