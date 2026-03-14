@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'callback_checker/version'
+require_relative 'callback_checker/plugin'
 require 'pathname'
 
 module RuboCop

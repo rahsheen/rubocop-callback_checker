@@ -1,2 +1,49 @@
-require:
+plugins:
   - rubocop-callback_checker
+
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+
+# The entry point file must be named rubocop-callback_checker.rb to match the gem name
+Naming/FileName:
+  Exclude:
+    - 'lib/rubocop-callback_checker.rb'
+
+# Allow longer blocks in spec files
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*_spec.rb'
+
+# Allow some cops to have longer methods due to RuboCop's pattern matching requirements
+Metrics/ClassLength:
+  Exclude:
+    - 'lib/rubocop/cop/**/*'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'lib/rubocop/cop/**/*'
+    - 'lib/callback_checker/cli.rb'
+    - 'lib/callback_checker/prism_analyzer.rb'
+
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/rubocop/cop/**/*'
+    - 'lib/callback_checker/prism_analyzer.rb'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/rubocop/cop/**/*'
+    - 'lib/callback_checker/prism_analyzer.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/rubocop/cop/**/*'
+    - 'lib/callback_checker/prism_analyzer.rb'
+
+Style/Documentation:
+  Enabled: false
+
+Lint/MissingSuper:
+  Exclude:
+    - 'lib/callback_checker/prism_analyzer.rb'

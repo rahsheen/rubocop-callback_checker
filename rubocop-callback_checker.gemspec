@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ['rahsheen']
   spec.email = ['rahsheen.porter@gmail.com']
 
-  spec.summary = 'rubocop '
+  spec.summary = 'RuboCop extension for checking ActiveRecord callbacks'
   spec.description = 'A RuboCop extension focused on avoiding callback hell in Rails.'
   spec.homepage = 'https://github.com/rahsheen/rubocop-callback_checker'
   spec.license = 'MIT'
@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
   spec.metadata['changelog_uri'] = "#{spec.homepage}/blob/main/CHANGELOG.md"
+  spec.metadata['default_lint_roller_plugin'] = 'RuboCop::CallbackChecker::Plugin'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -34,7 +35,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   # Uncomment to register a new dependency of your gem
-  spec.add_dependency 'rubocop', '~> 1.0'
+  spec.add_dependency 'lint_roller'
+  spec.add_dependency 'rubocop', '>= 1.72.0'
   spec.add_dependency 'rubocop-ast', '~> 1.0'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
