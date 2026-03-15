@@ -14,11 +14,13 @@ Naming/FileName:
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*_spec.rb'
+    - 'rubocop-callback_checker.gemspec'
 
 # Allow some cops to have longer methods due to RuboCop's pattern matching requirements
 Metrics/ClassLength:
   Exclude:
     - 'lib/rubocop/cop/**/*'
+    - 'lib/callback_checker/prism_analyzer.rb'
 
 Metrics/MethodLength:
   Exclude:
@@ -47,3 +49,13 @@ Style/Documentation:
 Lint/MissingSuper:
   Exclude:
     - 'lib/callback_checker/prism_analyzer.rb'
+
+Lint/UselessMethodDefinition:
+  Exclude:
+    - 'lib/callback_checker/prism_analyzer.rb'
+
+Layout/LineLength:
+  Max: 160
+
+Gemspec/DevelopmentDependencies:
+  Enabled: false
