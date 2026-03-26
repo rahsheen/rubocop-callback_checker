@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = 'A RuboCop extension focused on avoiding callback hell in Rails.'
   spec.homepage = 'https://github.com/rahsheen/rubocop-callback_checker'
   spec.license = 'MIT'
-  spec.required_ruby_version = '>= 3.1.0'
+  spec.required_ruby_version = '>= 2.7.0'
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
@@ -35,7 +35,7 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
   spec.add_dependency 'lint_roller'
-  spec.add_dependency 'rubocop', '>= 1.72.0'
+  spec.add_dependency 'rubocop', '>= 1.21.0'
   spec.add_dependency 'rubocop-ast', '~> 1.0'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
